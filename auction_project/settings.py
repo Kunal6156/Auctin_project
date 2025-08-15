@@ -1,4 +1,5 @@
 import os
+import dj_database_url
 from decouple import config
 from pathlib import Path
 
@@ -47,14 +48,11 @@ REST_FRAMEWORK = {
 }
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': config('DB_NAME', default='postgres'),
-        'USER': config('DB_USER', default='postgres'),
-        'PASSWORD': config('DB_PASSWORD', default='postgres'),
-        'HOST': config('DB_HOST', default='localhost'),
-        'PORT': config('DB_PORT', default='5432'),
-    }
+    'default': dj_database_url.config(
+        default=config('DATABASE_URL',default="),
+        conn_max_age=600,
+        ssl_require=True
+    )
 }
 
 

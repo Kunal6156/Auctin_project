@@ -58,9 +58,8 @@ DATABASES = {
 
 
 # Redis Configuration
-REDIS_URL = config('REDIS_URL')
+REDIS_URL = config('REDIS_URL', default='redis://localhost:6379/0')
 
-# Fixed Redis Channel Layer Configuration for Upstash Redis
 CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
@@ -81,8 +80,8 @@ CORS_ALLOWED_ORIGINS = [
 
 CORS_ALLOW_CREDENTIALS = True
 
-SENDGRID_API_KEY = config('SENDGRID_API_KEY')
-FROM_EMAIL = config('FROM_EMAIL')
+SENDGRID_API_KEY = config('SENDGRID_API_KEY', default='dummy_sendgrid_key')
+FROM_EMAIL = config('FROM_EMAIL', default='noreply@example.com')
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'frontend/build/static')]

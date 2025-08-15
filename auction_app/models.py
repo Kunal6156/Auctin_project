@@ -28,7 +28,7 @@ class Auction(models.Model):
     
     def is_active(self):
         now = timezone.now()
-        return self.go_live_time <= now <= self.end_time() and self.status == 'active'
+        return self.go_live_time <= now <= self.end_time() and self.status in ['active', 'pending']
 
 class Bid(models.Model):
     auction = models.ForeignKey(Auction, on_delete=models.CASCADE, related_name='bids')

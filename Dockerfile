@@ -18,4 +18,4 @@ COPY --from=frontend-build /app/frontend/build ./frontend/build
 
 EXPOSE 8000
 
-CMD ["sh", "-c", "python manage.py collectstatic --noinput && daphne -p 8000 auction_project.asgi:application"]
+CMD ["sh", "-c", "python manage.py collectstatic --noinput && daphne -b 0.0.0.0 -p 8000 auction_project.asgi:application"]

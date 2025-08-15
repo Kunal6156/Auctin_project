@@ -59,26 +59,27 @@ def get_redis_client():
 redis_client = get_redis_client()
 channel_layer = get_channel_layer()
 
-from django.utils import timezone
+def make_aware_if_naive(dt):
+    if timezone.is_naive(dt):
+        return timezone.make_aware(dt)
+    return dt
 
 def update_auction_statuses():
     now = timezone.now()
+    auctions = Auction.objects.all()
 
-    pending_auctions = Auction.objects.filter(status='pending')
-    for auction in pending_auctions:
-        go_live = auction.go_live_time
-        end_time = auction.end_time()
+    for auction in auctions:
+        start_time = make_aware_if_naive(auction.go_live_time)
+        end_time = make_aware_if_naive(auction.end_time())
 
-        # Ensure both times are timezone-aware
-        if timezone.is_naive(go_live):
-            go_live = timezone.make_aware(go_live)
-        if timezone.is_naive(end_time):
-            end_time = timezone.make_aware(end_time)
-
-        if go_live <= now < end_time:
-            auction.status = 'active'
-            auction.save()
-
+        if end_time <= now:
+            if auction.status not in ['ended', 'completed', 'cancelled']:
+                auction.status = 'ended'
+                auction.save()
+        elif start_time <= now < end_time:
+            if auction.status == 'pending':
+                auction.status = 'active'
+                auction.save()
     active_auctions = Auction.objects.filter(status='active')
     for auction in active_auctions:
         end_time = auction.end_time()

@@ -223,7 +223,7 @@ const AuctionRoom = ({ currentUser }) => {
   }
 
   const currentBid = auction.current_highest_bid || auction.starting_price;
-  const isAuctionActive = auction.is_active && timeLeft !== 'Auction Ended';
+  const isAuctionActive =(auction.status === 'active' || auction.is_active) && timeLeft !== 'Auction Ended';
   const isUserWinning = auction.winner?.id === currentUser?.id;
 
   return (

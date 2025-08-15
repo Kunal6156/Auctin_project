@@ -60,25 +60,29 @@ redis_client = get_redis_client()
 channel_layer = get_channel_layer()
 
 def update_auction_statuses():
-    """Update auction statuses based on current time"""
     now = timezone.now()
-    
-    # Activate pending auctions whose go_live_time has arrived
-    pending_auctions = Auction.objects.filter(
-        status='pending',
-        go_live_time__lte=now
-    )
+
+    pending_auctions = Auction.objects.filter(status='pending')
     for auction in pending_auctions:
-        if auction.end_time() > now:  # Only activate if not already expired
+        go_live = auction.go_live_time
+        end_time = auction.end_time()
+
+        # Make datetimes aware if they are naive
+        if timezone.is_naive(go_live):
+            go_live = timezone.make_aware(go_live)
+        if timezone.is_naive(end_time):
+            end_time = timezone.make_aware(end_time)
+
+        if go_live <= now < end_time:
             auction.status = 'active'
             auction.save()
-    
-    # End active auctions whose end_time has passed
-    active_auctions = Auction.objects.filter(
-        status='active'
-    )
+
+    active_auctions = Auction.objects.filter(status='active')
     for auction in active_auctions:
-        if auction.end_time() <= now:
+        end_time = auction.end_time()
+        if timezone.is_naive(end_time):
+            end_time = timezone.make_aware(end_time)
+        if end_time <= now:
             auction.status = 'ended'
             auction.save()
             

@@ -25,7 +25,7 @@ class Auction(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     
     def end_time(self):
-        end = self.go_live_time + timezone.timedelta(minutes=self.duration_hours)
+        end = self.go_live_time + timezone.timedelta(hours=self.duration_hours)
         if timezone.is_naive(end):
             end = timezone.make_aware(end)
         return end

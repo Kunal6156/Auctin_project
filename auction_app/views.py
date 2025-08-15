@@ -59,6 +59,8 @@ def get_redis_client():
 redis_client = get_redis_client()
 channel_layer = get_channel_layer()
 
+from django.utils import timezone
+
 def update_auction_statuses():
     now = timezone.now()
 
@@ -67,7 +69,7 @@ def update_auction_statuses():
         go_live = auction.go_live_time
         end_time = auction.end_time()
 
-        # Make datetimes aware if they are naive
+        # Ensure both times are timezone-aware
         if timezone.is_naive(go_live):
             go_live = timezone.make_aware(go_live)
         if timezone.is_naive(end_time):
@@ -82,11 +84,12 @@ def update_auction_statuses():
         end_time = auction.end_time()
         if timezone.is_naive(end_time):
             end_time = timezone.make_aware(end_time)
+
         if end_time <= now:
             auction.status = 'ended'
             auction.save()
-            
-            # Notify via WebSocket that auction ended
+
+            # WebSocket notification
             try:
                 async_to_sync(channel_layer.group_send)(
                     f'auction_{auction.id}',
@@ -101,6 +104,7 @@ def update_auction_statuses():
                 )
             except Exception as e:
                 logger.error(f"Failed to send WebSocket message for auction end: {e}")
+
 
 def check_admin_or_seller_permissions(user, auction_id=None):
     """Check if user is admin or seller of the auction"""

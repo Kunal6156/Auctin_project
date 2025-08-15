@@ -17,4 +17,5 @@ COPY --from=frontend-build /app/frontend/build ./frontend/build
 
 RUN python manage.py collectstatic --noinput
 EXPOSE 8000
-CMD ["daphne", "-p", "0.0.0.0:8000", "auction_project.asgi:application"]
+CMD ["daphne", "-b", "0.0.0.0", "-p", "8000", "auction_project.asgi:application"]
+

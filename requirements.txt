@@ -11,3 +11,4 @@ redis==5.0.1
 channels==4.0.0
 daphne
 whitenoise
+dj-database-url

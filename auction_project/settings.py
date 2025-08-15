@@ -3,6 +3,9 @@ import dj_database_url
 from decouple import config
 from pathlib import Path
 
+USE_TZ = True
+TIME_ZONE = 'UTC'
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = config('SECRET_KEY', default='your-secret-key')

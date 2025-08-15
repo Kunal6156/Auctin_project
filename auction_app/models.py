@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
-from django.utils.timezone import localtime
+
 
 class Auction(models.Model):
     STATUS_CHOICES = [
@@ -28,9 +28,14 @@ class Auction(models.Model):
         return self.go_live_time + timezone.timedelta(hours=self.duration_hours)
     
     def is_active(self):
-        now = localtime(timezone.now())
-        return self.go_live_time <= now <= self.end_time() and self.status in ['active', 'pending']
-
+        now = timezone.now()
+        go_live = self.go_live_time
+        end_time = self.end_time()
+        if timezone.is_naive(go_live):
+            go_live = timezone.make_aware(go_live)
+        if timezone.is_naive(end_time):
+            end_time = timezone.make_aware(end_time)
+        return go_live <= now <= end_time and self.status in ['active', 'pending']
 class Bid(models.Model):
     auction = models.ForeignKey(Auction, on_delete=models.CASCADE, related_name='bids')
     bidder = models.ForeignKey(User, on_delete=models.CASCADE, related_name='bids')

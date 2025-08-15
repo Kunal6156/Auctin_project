@@ -83,9 +83,6 @@ CORS_ALLOW_CREDENTIALS = True
 SENDGRID_API_KEY = config('SENDGRID_API_KEY', default='dummy_sendgrid_key')
 FROM_EMAIL = config('FROM_EMAIL', default='noreply@example.com')
 
-STATIC_URL = '/static/'
-STATICFILES_DIRS = [os.path.join(BASE_DIR, 'frontend/build/static')]
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 TEMPLATES = [
     {
@@ -103,9 +100,10 @@ TEMPLATES = [
     },
 ]
 
-TEMPLATES[0]['DIRS'] = [
-    os.path.join(BASE_DIR, 'static', 'build')
-]
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'frontend/build/static')]
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
 
 # Logging configuration for debugging
 LOGGING = {

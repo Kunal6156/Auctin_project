@@ -1,0 +1,19 @@
+# Dependency directories
+/node_modules/
+/frontend/node_modules/
+
+# Environment variables
+.env
+
+# Built assets
+/frontend/build/
+/staticfiles/
+*.pyc
+
+# IDE-specific files
+.idea/
+.vscode/
+
+# Operating System temporary files
+.DS_Store
+Thumbs.db

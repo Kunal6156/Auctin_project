@@ -103,6 +103,10 @@ TEMPLATES = [
     },
 ]
 
+TEMPLATES[0]['DIRS'] = [
+    os.path.join(BASE_DIR, 'static', 'build')
+]
+
 # Logging configuration for debugging
 LOGGING = {
     'version': 1,

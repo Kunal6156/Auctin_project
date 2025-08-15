@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
+from django.utils.timezone import localtime
 
 class Auction(models.Model):
     STATUS_CHOICES = [
@@ -27,7 +28,7 @@ class Auction(models.Model):
         return self.go_live_time + timezone.timedelta(hours=self.duration_hours)
     
     def is_active(self):
-        now = timezone.now()
+        now = localtime(timezone.now())
         return self.go_live_time <= now <= self.end_time() and self.status in ['active', 'pending']
 
 class Bid(models.Model):

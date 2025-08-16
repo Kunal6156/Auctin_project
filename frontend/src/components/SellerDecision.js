@@ -181,7 +181,7 @@ const SellerDecision = ({ currentUser }) => {
           message = `❌ Bid rejected. The auction has been marked as closed.`;
           break;
         case 'counter':
-          message = `💬 Counter offer of ₹${counterAmount} sent to the bidder. They will be notified via email.`;
+          message = `💬 Counter offer of ₹${counterAmount} sent.Buyer can respond here: /counter-offers/${result.counter_offer.id}`;
           break;
       }
       

@@ -10,11 +10,13 @@ import {
   adminUpdateAllStatuses
 } from '../services/api';
 
-
-const toLocal = (utcString) => {
-  const d = new Date(utcString);
-  return new Date(d.getTime() - d.getTimezoneOffset() * 60000);
+const toIST = (dateString) => {
+  return new Date(dateString).toLocaleString("en-IN", {
+    timeZone: "Asia/Kolkata",
+    hour12: false
+  });
 };
+
 
 const SellerDecision = ({ currentUser }) => {
   const { id } = useParams();
@@ -246,7 +248,7 @@ const SellerDecision = ({ currentUser }) => {
 
   const getTimeRemaining = (endTime) => {
     const now = new Date();
-    const end = toLocal(endTime);
+    const end = new Date(endTime);
     const diff = end - now;
     
     if (diff <= 0) return 'Ended';
@@ -263,8 +265,9 @@ const SellerDecision = ({ currentUser }) => {
 
   const getAuctionDisplayStatus = (auction) => {
     const now = new Date();
-    const goLiveTime = toLocal(auction.go_live_time)
-    const endTime = toLocal(auction.end_time)
+    const goLiveTime = new Date(auction.go_live_time);
+    const endTime = new Date(auction.end_time);
+
     
     if (auction.status === 'pending' && goLiveTime <= now && now <= endTime) {
       return 'active (live)';
@@ -535,8 +538,9 @@ const SellerDecision = ({ currentUser }) => {
               </span>
             </p>
             <p><strong>Winner:</strong> {auction.winner?.username || 'No bids yet'}</p>
-            <p><strong>Go Live:</strong> {toLocal(auction.go_live_time).toLocaleString()}</p>
-            <p><strong>End Time:</strong> {toLocal(auction.end_time).toLocaleString()}</p>
+            <p><strong>Go Live:</strong> {new Date(auction.go_live_time).toLocaleString()}</p>
+            <p><strong>End Time:</strong> {new Date(auction.end_time).toLocaleString()}</p>
+
 
           </div>
 

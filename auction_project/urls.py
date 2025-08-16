@@ -4,6 +4,6 @@ from django.views.generic import TemplateView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('auction_app.urls')),  # all backend API endpoints
-    re_path(r'^(?!api/).*$', TemplateView.as_view(template_name="index.html")),  # React SPA fallback
+    path('', include('auction_app.urls')),  
+    re_path(r'^(?!api/).*$', TemplateView.as_view(template_name="index.html")), 
 ]

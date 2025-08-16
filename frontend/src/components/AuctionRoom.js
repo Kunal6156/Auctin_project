@@ -64,7 +64,7 @@ const AuctionRoom = ({ currentUser }) => {
   const updateTimeLeft = () => {
     if (!auction) return;
     
-    const now = new Date();
+    const now = new Date(new Date().getTime() + (new Date().getTimezoneOffset() * 60000));
     const endTimeUTC = new Date(auction.end_time);
     const endTime = new Date(endTimeUTC.getTime() - endTimeUTC.getTimezoneOffset() * 60000);
 
@@ -225,9 +225,7 @@ const AuctionRoom = ({ currentUser }) => {
   }
 
   const currentBid = auction.current_highest_bid || auction.starting_price;
-  // Compute start & end using local timezone
-  const now = new Date();
-
+  const now = new Date(new Date().getTime() + (new Date().getTimezoneOffset() * 60000));
   const startUTC = new Date(auction.go_live_time);
   const start = new Date(startUTC.getTime() - startUTC.getTimezoneOffset() * 60000);
 

@@ -26,7 +26,6 @@ const AuctionRoom = ({ currentUser }) => {
   useEffect(() => {
     loadAuction();
     
-    // Cleanup WebSocket on unmount
     return () => {
       if (wsRef.current) {
         wsRef.current.close();
@@ -36,12 +35,10 @@ const AuctionRoom = ({ currentUser }) => {
 
   useEffect(() => {
     if (auction) {
-      // Setup WebSocket connection with retry logic
       const websocket = connectWebSocket(id, handleWebSocketMessage);
       setWs(websocket);
       wsRef.current = websocket;
       
-      // Setup timer
       const timer = setInterval(() => {
         updateTimeLeft();
       }, 1000);
@@ -113,7 +110,6 @@ const AuctionRoom = ({ currentUser }) => {
         }
       }));
       
-      // Add new bid to history
       const newBid = {
         id: Date.now(),
         amount: data.message.highest_bid,
@@ -150,7 +146,6 @@ const AuctionRoom = ({ currentUser }) => {
     } catch (error) {
       console.error('Bid placement error:', error);
       
-      // Handle specific error messages
       let errorMessage = 'Failed to place bid';
       if (error.response?.status === 500) {
         errorMessage = 'Server error. Please try again in a moment.';
@@ -192,7 +187,6 @@ const AuctionRoom = ({ currentUser }) => {
     return parseFloat(amount).toFixed(2);
   };
 
-  // Auto-refresh auction data every 30 seconds as fallback
   useEffect(() => {
     if (!auction) return;
     
@@ -246,7 +240,6 @@ const end = new Date(auction.end_time);
   return (
     <div className="auction-room">
     
-      {/* Header */}
       <div className="auction-header">
         <div className="auction-title">
         <h1>{auction.item_name}</h1>
@@ -265,17 +258,14 @@ const end = new Date(auction.end_time);
         </div>
       </div>
 
-      {/* WebSocket Status Indicator */}
       <div className="connection-status">
         <span className={`status-indicator ${ws?.readyState === 1 ? 'connected' : 'disconnected'}`}>
           {ws?.readyState === 1 ? '🟢 Live Updates Active' : '🔴 Reconnecting...'}
         </span>
       </div>
 
-      {/* Main Content */}
       <div className="auction-content">
         <div className="main-content">
-          {/* Auction Details */}
           <div className="auction-details">
             <h2>Item Details</h2>
             <div className="item-description">
@@ -301,8 +291,6 @@ const end = new Date(auction.end_time);
               </div>
             </div>
           </div>
-
-          {/* Current Bid Display */}
           <div className="current-bid-display">
             <h3>Current Highest Bid</h3>
             <div className="bid-amount">₹{formatCurrency(currentBid)}</div>
@@ -314,7 +302,6 @@ const end = new Date(auction.end_time);
             )}
           </div>
 
-          {/* Bid Form */}
           {currentUser && (
             <BidForm
               auction={auction}
@@ -332,8 +319,6 @@ const end = new Date(auction.end_time);
             </div>
           )}
         </div>
-
-        {/* Sidebar */}
         <div className="sidebar">
           {/* Live Notifications */}
           <div className="notifications-panel">
@@ -354,7 +339,6 @@ const end = new Date(auction.end_time);
             )}
           </div>
 
-          {/* Bid History */}
           <div className="bid-history">
             <h3>Bid History</h3>
             <button 

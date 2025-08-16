@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from django.utils.timezone import localtime   # ✅ import added
+from django.utils.timezone import localtime   
 from zoneinfo import ZoneInfo
 from .models import Auction, Bid, CounterOffer, Notification
 
@@ -36,7 +36,6 @@ class AuctionSerializer(serializers.ModelSerializer):
     def get_is_active(self, obj):
         return obj.is_active()
 
-    # ✅ fixed: removed () after field names
     def get_end_time(self, obj):
         return localtime(obj.end_time).strftime("%Y-%m-%d %H:%M:%S")
 

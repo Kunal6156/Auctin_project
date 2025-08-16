@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { API_BASE_URL, getAuctions, updateAuctionStatus, getSellerDashboard, adminUpdateAllStatuses } from '../services/api';
 
-const toLocal = (utcString) => {
-  const d = new Date(utcString);
-  return new Date(d.getTime() - d.getTimezoneOffset() * 60000);
-};
+const toIST = (isoString) =>
+  new Date(isoString).toLocaleString("en-IN", {
+    timeZone: "Asia/Kolkata",
+    hour12: false,
+  });
 
 
 const AdminPanel = ({ currentUser }) => {
@@ -97,8 +98,9 @@ const AdminPanel = ({ currentUser }) => {
         let totalRevenue = 0;
 
         data.forEach(auction => {
-          const goLiveTime = toLocal(auction.go_live_time);
-          const endTime = toLocal(auction.end_time);
+          const goLiveTime = new Date(auction.go_live_time);
+          const endTime = new Date(auction.end_time);
+
 
 
           const isTimeActive = goLiveTime <= now && now <= endTime;
@@ -191,9 +193,12 @@ const AdminPanel = ({ currentUser }) => {
     return parseFloat(amount || 0).toFixed(2);
   };
 
-  const formatDateTime = (dateString) => {
-    return new Date(dateString).toLocaleString();
-  };
+  const formatDateTime = (dateString) =>
+  new Date(dateString).toLocaleString("en-IN", {
+    timeZone: "Asia/Kolkata",
+    hour12: false,
+  });
+
 
   const getAuctionDisplayStatus = (auction) => {
     const now = new Date();
@@ -562,10 +567,10 @@ const AdminPanel = ({ currentUser }) => {
                     ₹{formatCurrency(auction.current_highest_bid || auction.starting_price)}
                   </td>
                   <td style={{ padding: '1rem 0.75rem', textAlign: 'center', fontSize: '0.85rem' }}>
-                   {toLocal(auction.go_live_time).toLocaleString()}
+                   {toIST(auction.go_live_time)}
                   </td>
                   <td style={{ padding: '1rem 0.75rem', textAlign: 'center', fontSize: '0.85rem' }}>
-                    {toLocal(auction.end_time).toLocaleString()}
+                    {toIST(auction.end_time)}
                   </td>
                   <td style={{ padding: '1rem 0.75rem', textAlign: 'center' }}>
                     <span style={{
@@ -673,7 +678,7 @@ const AdminPanel = ({ currentUser }) => {
         <p style={{ margin: 0, fontSize: '0.9rem', opacity: 0.8 }}>
           <strong>Access Level:</strong> {accessType === 'admin' ? '🔧 System Administrator' : '📊 Seller Management'} •
           <strong> Logged in as:</strong> {currentUser?.username} •
-          <strong> Last Updated:</strong> {new Date().toLocaleTimeString()}
+          <strong> Last Updated:</strong> {toIST(new Date().toISOString())}
         </p>
         {accessType === 'seller' && (
           <p style={{ margin: '0.5rem 0 0', fontSize: '0.8rem', opacity: 0.7 }}>

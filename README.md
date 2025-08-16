@@ -118,7 +118,7 @@ auction-system/
 
 ### 1️⃣ Clone Repository
 ```bash
-git clone <YOUR_REPO_URL>
+git clone https://github.com/Kunal6156/Auctin_project
 cd auction-system
 ````
 

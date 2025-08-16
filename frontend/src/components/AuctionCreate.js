@@ -96,13 +96,16 @@ const AuctionCreate = ({ onSuccess }) => {
     setLoading(true);
     
     try {
-      // Prepare data for API
-      const auctionData = {
-        ...formData,
-        starting_price: parseFloat(formData.starting_price),
-        bid_increment: parseFloat(formData.bid_increment),
-        duration_hours: parseInt(formData.duration_hours)
-      };
+      const localDate = new Date(formData.go_live_time);
+      const utcDate = new Date(localDate.getTime() - localDate.getTimezoneOffset() * 60000);
+
+      const auctionData = { ...formData,
+  go_live_time: utcDate.toISOString(),  
+  starting_price: parseFloat(formData.starting_price),
+  bid_increment: parseFloat(formData.bid_increment),
+  duration_hours: parseInt(formData.duration_hours)
+};
+
 
       const createdAuction = await createAuction(auctionData);
       

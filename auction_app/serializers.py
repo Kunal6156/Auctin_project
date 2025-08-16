@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
+from django.utils.timezone import localtime   # ✅ import added
 from zoneinfo import ZoneInfo
 from .models import Auction, Bid, CounterOffer, Notification
 
@@ -25,7 +26,7 @@ class AuctionSerializer(serializers.ModelSerializer):
         format=None, default_timezone=IST, required=False
     )
     end_time = serializers.DateTimeField(
-         format=None, default_timezone=IST, required=False
+        format=None, default_timezone=IST, required=False
     )
 
     class Meta:
@@ -35,8 +36,9 @@ class AuctionSerializer(serializers.ModelSerializer):
     def get_is_active(self, obj):
         return obj.is_active()
 
+    # ✅ fixed: removed () after field names
     def get_end_time(self, obj):
-        return localtime(obj.end_time()).strftime("%Y-%m-%d %H:%M:%S")
+        return localtime(obj.end_time).strftime("%Y-%m-%d %H:%M:%S")
 
     def get_go_live_time(self, obj):
         return localtime(obj.go_live_time).strftime("%Y-%m-%d %H:%M:%S")
@@ -50,7 +52,7 @@ class BidSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Bid
-        fields = '__all__'
+        fields = "__all__"
 
 
 class CounterOfferSerializer(serializers.ModelSerializer):
@@ -59,11 +61,10 @@ class CounterOfferSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CounterOffer
-        fields = '__all__'
+        fields = "__all__"
 
 
 class NotificationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Notification
-        fields = '__all__'
-
+        fields = "__all__"

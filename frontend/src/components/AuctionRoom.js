@@ -65,7 +65,9 @@ const AuctionRoom = ({ currentUser }) => {
     if (!auction) return;
     
     const now = new Date();
-    const endTime = new Date(auction.end_time);
+    const endTimeUTC = new Date(auction.end_time);
+    const endTime = new Date(endTimeUTC.getTime() - endTimeUTC.getTimezoneOffset() * 60000);
+
     const diff = endTime - now;
     
     if (diff <= 0) {

@@ -170,7 +170,7 @@ const SellerDecision = ({ currentUser }) => {
         data.counter_amount = parseFloat(counterAmount).toFixed(2);
       }
       
-      await sellerDecision(id, data);
+      const result=await sellerDecision(id, data);
       
       let message = '';
       switch (decision) {

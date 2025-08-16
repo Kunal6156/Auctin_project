@@ -47,11 +47,14 @@ class AuctionSerializer(serializers.ModelSerializer):
 
 
 class BidSerializer(serializers.ModelSerializer):
-    bidder = UserSerializer(read_only=True)
+    bidder = UserSerializer(read_only=True)   # handled by server
+    auction = serializers.PrimaryKeyRelatedField(read_only=True)  # handled by server
 
     class Meta:
         model = Bid
-        fields = "__all__"
+        fields = ["id", "auction", "bidder", "amount", "created_at"]
+
+
 
 
 class CounterOfferSerializer(serializers.ModelSerializer):

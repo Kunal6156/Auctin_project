@@ -14,8 +14,6 @@ const Register = ({ onRegister, switchToLogin }) => {
 
   const navigate = useNavigate();   
 
-      navigate('/');
-
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -45,8 +43,7 @@ const Register = ({ onRegister, switchToLogin }) => {
         email: formData.email,
         password: formData.password
       });
-      onRegister(response.user);
-      const navigate = useNavigate(); 
+      onRegister(response.user); 
       navigate('/');
     } catch (err) {
       setError(err.response?.data?.error || 'Registration failed');

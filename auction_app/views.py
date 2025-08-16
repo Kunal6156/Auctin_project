@@ -761,7 +761,6 @@ def respond_counter_offer(request, offer_id):
                 auction=auction
             )
             
-            # WebSocket notification to seller
             try:
                 async_to_sync(channel_layer.group_send)(
                     f'user_{offer.seller.id}',
@@ -786,19 +785,15 @@ def respond_counter_offer(request, offer_id):
             except Exception as e:
                 logger.error(f"Failed to send email or generate invoice: {e}")
                 
-        else:  # rejected
-            # Notify seller
+        else:  
             Notification.objects.create(
                 user=offer.seller,
                 message=f'Your counter offer for {offer.auction.item_name} was rejected',
                 auction=offer.auction
             )
             
-            # Mark auction as cancelled
             offer.auction.status = 'cancelled'
             offer.auction.save()
-            
-            # WebSocket notification to seller
             try:
                 async_to_sync(channel_layer.group_send)(
                     f'user_{offer.seller.id}',
@@ -816,7 +811,6 @@ def respond_counter_offer(request, offer_id):
             except Exception as e:
                 logger.error(f"Failed to send WebSocket notification: {e}")
         
-        # Notify auction watchers
         try:
             async_to_sync(channel_layer.group_send)(
                 f'auction_{offer.auction.id}',
@@ -834,7 +828,6 @@ def respond_counter_offer(request, offer_id):
         except Exception as e:
             logger.error(f"Failed to send auction WebSocket message: {e}")
         
-        # Send admin notification
         try:
             async_to_sync(channel_layer.group_send)(
                 'admin_monitoring',
@@ -865,7 +858,6 @@ def respond_counter_offer(request, offer_id):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_counter_offer(request, offer_id):
-    """Get counter offer details for buyer response"""
     try:
         offer = CounterOffer.objects.select_related('auction', 'seller', 'buyer').get(
             id=offer_id,
@@ -883,14 +875,11 @@ def get_counter_offer(request, offer_id):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_user_counter_offers(request):
-    """Get all counter offers for the current user"""
     try:
-        # Get counter offers where user is buyer
         received_offers = CounterOffer.objects.select_related('auction', 'seller').filter(
             buyer=request.user
         ).order_by('-created_at')
         
-        # Get counter offers where user is seller
         sent_offers = CounterOffer.objects.select_related('auction', 'buyer').filter(
             seller=request.user
         ).order_by('-created_at')
@@ -910,11 +899,9 @@ def get_user_counter_offers(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def admin_update_all_auction_statuses(request):
-    """Manual trigger for updating all auction statuses - admin or seller"""
     try:
         update_auction_statuses()
         
-        # Send notification
         async_to_sync(channel_layer.group_send)(
             'admin_monitoring',
             {
@@ -935,7 +922,6 @@ def admin_update_all_auction_statuses(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def admin_get_live_stats(request):
-    """Get live statistics for admin dashboard"""
     if not (request.user.is_staff or request.user.is_superuser):
         return Response({'error': 'Permission denied'}, status=403)
     
@@ -944,28 +930,23 @@ def admin_get_live_stats(request):
         
         now = timezone.now()
         
-        # Basic counts
         total_auctions = Auction.objects.count()
         total_users = User.objects.count()
         total_bids = Bid.objects.count()
         
-        # Active auctions (more accurate calculation)
         active_count = 0
         all_auctions = Auction.objects.all()
         for auction in all_auctions:
             if auction.is_active():
                 active_count += 1
         
-        # Recent activity (last 24 hours)
         yesterday = now - timezone.timedelta(hours=24)
         recent_bids = Bid.objects.filter(timestamp__gte=yesterday).count()
         recent_auctions = Auction.objects.filter(created_at__gte=yesterday).count()
         
-        # Counter offer stats
         pending_counter_offers = CounterOffer.objects.filter(status='pending').count()
         total_counter_offers = CounterOffer.objects.count()
         
-        # Revenue calculation (completed auctions)
         completed_auctions = Auction.objects.filter(status='completed')
         total_revenue = sum(float(auction.current_highest_bid or 0) for auction in completed_auctions)
         

@@ -11,7 +11,6 @@ const BidForm = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Calculate quick bid amounts
   const currentBid = parseFloat(auction?.current_highest_bid || auction?.starting_price || 0);
   const increment = parseFloat(auction?.bid_increment || 1);
   const minBid = Math.max(currentBid + increment, minimumBid);
@@ -30,12 +29,10 @@ const BidForm = ({
     try {
       const amount = parseFloat(bidAmount);
       
-      // Validation
       if (!amount || amount < minBid) {
         throw new Error(`Minimum bid is ₹${minBid.toFixed(2)}`);
       }
 
-      // Call the parent's bid placement function
       await onBidPlaced(amount);
       setBidAmount('');
       
@@ -87,7 +84,6 @@ const BidForm = ({
         )}
       </div>
 
-      {/* Error Display */}
       {error && (
         <div className="error-message" style={{
           background: '#f8d7da',
@@ -100,8 +96,6 @@ const BidForm = ({
           {error}
         </div>
       )}
-
-      {/* Manual Bid Form */}
       <form onSubmit={handleBidSubmit} className="bid-form">
         <div className="bid-input-group">
           <span className="currency-symbol">₹</span>
@@ -126,7 +120,6 @@ const BidForm = ({
         </div>
       </form>
 
-      {/* Quick Bid Buttons */}
       <div className="quick-bid-buttons">
         <h4>⚡ Quick Bid Options</h4>
         <div className="quick-bid-grid">
@@ -143,7 +136,6 @@ const BidForm = ({
         </div>
       </div>
 
-      {/* Bid Tips */}
       <div className="bid-tips" style={{
         marginTop: '1rem',
         padding: '0.75rem',

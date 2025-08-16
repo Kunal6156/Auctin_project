@@ -193,4 +193,3 @@ Developed by **Kunal**
 
 # 🌟 Thank you for visiting the project!
 
-```

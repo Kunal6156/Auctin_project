@@ -50,7 +50,6 @@ const NotificationSystem = ({ currentUser, onCounterOfferReceived }) => {
         console.log('Notification WebSocket disconnected');
         setWsConnection(null);
         
-        // Attempt to reconnect after 5 seconds
         setTimeout(() => {
           if (currentUser) {
             setupWebSocketConnection();
@@ -93,7 +92,6 @@ const NotificationSystem = ({ currentUser, onCounterOfferReceived }) => {
           counter_offer_id: data.message.counter_offer_id
         });
         
-        // Call callback if provided
         if (onCounterOfferReceived) {
           onCounterOfferReceived(data.message);
         }
@@ -127,10 +125,9 @@ const NotificationSystem = ({ currentUser, onCounterOfferReceived }) => {
   };
 
   const addNotification = (notification) => {
-    setNotifications(prev => [notification, ...prev.slice(0, 19)]); // Keep last 20
+    setNotifications(prev => [notification, ...prev.slice(0, 19)]); 
     setUnreadCount(prev => prev + 1);
     
-    // Show browser notification if permission granted
     if (Notification.permission === 'granted') {
       new Notification('Auction System', {
         body: notification.message,
@@ -212,7 +209,6 @@ const NotificationSystem = ({ currentUser, onCounterOfferReceived }) => {
     return time.toLocaleDateString();
   };
 
-  // Request notification permission on mount
   useEffect(() => {
     if (currentUser && Notification.permission === 'default') {
       Notification.requestPermission();
@@ -223,7 +219,7 @@ const NotificationSystem = ({ currentUser, onCounterOfferReceived }) => {
 
   return (
     <div className="notification-system">
-      {/* Notification Bell */}
+    
       <div className="notification-bell" style={{ position: 'relative', display: 'inline-block' }}>
         <button
           onClick={() => setIsVisible(!isVisible)}
@@ -259,7 +255,6 @@ const NotificationSystem = ({ currentUser, onCounterOfferReceived }) => {
           )}
         </button>
 
-        {/* WebSocket Connection Status */}
         <span
           style={{
             position: 'absolute',
@@ -274,7 +269,6 @@ const NotificationSystem = ({ currentUser, onCounterOfferReceived }) => {
         />
       </div>
 
-      {/* Notification Panel */}
       {isVisible && (
         <div
           className="notification-panel"
@@ -292,7 +286,6 @@ const NotificationSystem = ({ currentUser, onCounterOfferReceived }) => {
             overflow: 'hidden'
           }}
         >
-          {/* Header */}
           <div
             style={{
               padding: '1rem',
@@ -463,7 +456,6 @@ const NotificationSystem = ({ currentUser, onCounterOfferReceived }) => {
         </div>
       )}
 
-      {/* Click outside to close */}
       {isVisible && (
         <div
           style={{

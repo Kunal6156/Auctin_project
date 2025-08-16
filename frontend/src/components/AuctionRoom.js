@@ -247,7 +247,7 @@ const AuctionRoom = ({ currentUser }) => {
         <h1>{auction.item_name}</h1>
 
         {(() => {
-           const displayStatus = (now >= start && now <= end) ? 'active': (timeLeft === 'Auction Ended' ? 'ended' : auction.status);
+           const displayStatus = isAuctionActive ? 'active' : (timeLeft === 'Auction Ended' ? 'ended' : auction.status);
           return ( <span className={`status-badge ${displayStatus}`}>
         {displayStatus}
                   </span> );

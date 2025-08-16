@@ -23,11 +23,9 @@ from .services import send_confirmation_email, generate_invoice
 
 logger = logging.getLogger(__name__)
 
-# Enhanced Redis client initialization
 def get_redis_client():
     try:
         if settings.REDIS_URL.startswith('rediss://'):
-            # Parse the URL for SSL connection
             parsed_url = urlparse(settings.REDIS_URL)
             
             redis_client = redis.Redis(
@@ -46,14 +44,12 @@ def get_redis_client():
         else:
             redis_client = redis.from_url(settings.REDIS_URL, decode_responses=True)
         
-        # Test the connection
         redis_client.ping()
         logger.info("Redis connection established successfully")
         return redis_client
         
     except Exception as e:
         logger.error(f"Failed to connect to Redis: {e}")
-        # Return None so we can handle Redis being unavailable
         return None
 
 redis_client = get_redis_client()
@@ -89,8 +85,6 @@ def update_auction_statuses():
         if end_time <= now:
             auction.status = 'ended'
             auction.save()
-
-            # WebSocket notification
             try:
                 async_to_sync(channel_layer.group_send)(
                     f'auction_{auction.id}',
@@ -108,7 +102,6 @@ def update_auction_statuses():
 
 
 def check_admin_or_seller_permissions(user, auction_id=None):
-    """Check if user is admin or seller of the auction"""
     if user.is_staff or user.is_superuser:
         return True
     
@@ -123,7 +116,6 @@ def check_admin_or_seller_permissions(user, auction_id=None):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def seller_dashboard(request):
-    """Simple seller dashboard - if this function exists"""
     try:
         auctions = Auction.objects.filter(seller=request.user)
         stats = {
@@ -134,7 +126,6 @@ def seller_dashboard(request):
             "total_revenue": sum(float(a.current_highest_bid or 0) for a in auctions if a.status == 'completed')
         }
         
-        # Use the serializer properly
         serializer = AuctionSerializer(auctions, many=True)
         
         return Response({
@@ -242,9 +233,6 @@ class AuctionViewSet(viewsets.ModelViewSet):
     serializer_class = AuctionSerializer
     
     def get_permissions(self):
-        """
-        Instantiates and returns the list of permissions that this view requires.
-        """
         if self.action == 'list' or self.action == 'retrieve':
             permission_classes = [AllowAny]
         else:
@@ -252,18 +240,15 @@ class AuctionViewSet(viewsets.ModelViewSet):
         return [permission() for permission in permission_classes]
     
     def list(self, request, *args, **kwargs):
-        # Update auction statuses before returning list
         update_auction_statuses()
         return super().list(request, *args, **kwargs)
     
     def retrieve(self, request, *args, **kwargs):
-        # Update auction statuses before returning single auction
         update_auction_statuses()
         return super().retrieve(request, *args, **kwargs)
     
     def perform_create(self, serializer):
         auction = serializer.save(seller=self.request.user)
-        # Check if auction should be active immediately
         if auction.go_live_time <= timezone.now() and auction.end_time() > timezone.now():
             auction.status = 'active'
             auction.save()
@@ -273,14 +258,10 @@ class AuctionViewSet(viewsets.ModelViewSet):
 def update_auction_status(request, auction_id):
     try:
         auction = Auction.objects.get(id=auction_id)
-        
-        # Check permissions - admin or seller
         if not check_admin_or_seller_permissions(request.user, auction_id):
             return Response({'error': 'Permission denied'}, status=403)
         
         new_status = request.data.get('status')
-        
-        # Validate status
         valid_statuses = ['pending', 'active', 'ended', 'completed', 'cancelled']
         if new_status not in valid_statuses:
             return Response({'error': 'Invalid status'}, status=400)
@@ -289,10 +270,8 @@ def update_auction_status(request, auction_id):
         auction.status = new_status
         auction.save()
         
-        # Log the status change
         logger.info(f"Auction {auction_id} status changed from {old_status} to {new_status} by {request.user.username}")
         
-        # Notify via WebSocket
         try:
             async_to_sync(channel_layer.group_send)(
                 f'auction_{auction_id}',
@@ -317,19 +296,16 @@ def update_auction_status(request, auction_id):
         logger.error(f"Update auction status error: {e}")
         return Response({'error': str(e)}, status=500)
 
-# [Place bid function remains the same...]
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def place_bid(request, auction_id):
     try:
         logger.info(f"Place bid attempt for auction {auction_id} by user {request.user.username}")
         
-        # Update auction statuses first
         update_auction_statuses()
         
         auction = Auction.objects.get(id=auction_id)
         
-        # Check if auction is active (both status and time-based)
         now = timezone.now()
         is_time_active = auction.go_live_time <= now <= auction.end_time()
         
@@ -343,7 +319,6 @@ def place_bid(request, auction_id):
         bid_amount = Decimal(str(request.data['amount']))
         logger.info(f"Bid amount: {bid_amount}")
         
-        # Check Redis for current highest bid (with fallback if Redis is unavailable)
         redis_key = f'auction:{auction_id}:highest_bid'
         redis_highest = None
         
@@ -355,7 +330,6 @@ def place_bid(request, auction_id):
             except Exception as redis_error:
                 logger.warning(f"Redis error, falling back to database: {redis_error}")
         
-        # Use either Redis value or database value, whichever is higher
         db_highest = auction.current_highest_bid or auction.starting_price
         actual_highest = max(redis_highest or Decimal('0'), db_highest)
         
@@ -369,7 +343,6 @@ def place_bid(request, auction_id):
                 'current_highest': str(actual_highest)
             }, status=400)
         
-        # Create bid
         bid = Bid.objects.create(
             auction=auction,
             bidder=request.user,
@@ -377,7 +350,6 @@ def place_bid(request, auction_id):
         )
         logger.info(f"Bid created with ID: {bid.id}")
         
-        # Update Redis (with error handling)
         if redis_client:
             try:
                 redis_client.set(redis_key, str(bid_amount))
@@ -385,14 +357,12 @@ def place_bid(request, auction_id):
             except Exception as redis_error:
                 logger.error(f"Failed to update Redis: {redis_error}")
         
-        # Update auction
         previous_winner = auction.winner
         auction.current_highest_bid = bid_amount
         auction.winner = request.user
         auction.save()
         logger.info(f"Auction updated. New highest bid: {bid_amount}")
         
-        # Send notifications
         try:
             if previous_winner and previous_winner != request.user:
                 Notification.objects.create(
@@ -401,7 +371,6 @@ def place_bid(request, auction_id):
                     auction=auction
                 )
                 
-                # WebSocket notification to previous winner
                 async_to_sync(channel_layer.group_send)(
                     f'user_{previous_winner.id}',
                     {
@@ -422,7 +391,6 @@ def place_bid(request, auction_id):
                 auction=auction
             )
             
-            # WebSocket notification to seller
             async_to_sync(channel_layer.group_send)(
                 f'user_{auction.seller.id}',
                 {
@@ -441,7 +409,6 @@ def place_bid(request, auction_id):
         except Exception as notif_error:
             logger.error(f"Failed to create notifications: {notif_error}")
         
-        # Broadcast to WebSocket
         try:
             async_to_sync(channel_layer.group_send)(
                 f'auction_{auction_id}',
@@ -457,7 +424,6 @@ def place_bid(request, auction_id):
                 }
             )
             
-            # Send to admin monitoring
             async_to_sync(channel_layer.group_send)(
                 'admin_monitoring',
                 {
@@ -513,8 +479,6 @@ def seller_decision(request, auction_id):
                     message=f'Congratulations! Your bid on {auction.item_name} was accepted',
                     auction=auction
                 )
-                
-                # WebSocket notification to winner
                 try:
                     async_to_sync(channel_layer.group_send)(
                         f'user_{auction.winner.id}',
@@ -532,14 +496,12 @@ def seller_decision(request, auction_id):
                 except Exception as e:
                     logger.error(f"Failed to send WebSocket notification: {e}")
                 
-                # Send confirmation email and generate invoice
                 try:
                     send_confirmation_email(auction.seller, auction.winner, auction)
                     generate_invoice(auction)
                 except Exception as e:
                     logger.error(f"Failed to send email or generate invoice: {e}")
             
-            # Notify all watchers of the auction
             try:
                 async_to_sync(channel_layer.group_send)(
                     f'auction_{auction.id}',
@@ -567,7 +529,6 @@ def seller_decision(request, auction_id):
                     auction=auction
                 )
                 
-                # WebSocket notification to bidder
                 try:
                     async_to_sync(channel_layer.group_send)(
                         f'user_{auction.winner.id}',
@@ -584,7 +545,6 @@ def seller_decision(request, auction_id):
                 except Exception as e:
                     logger.error(f"Failed to send WebSocket notification: {e}")
             
-            # Notify all watchers
             try:
                 async_to_sync(channel_layer.group_send)(
                     f'auction_{auction.id}',
@@ -603,23 +563,16 @@ def seller_decision(request, auction_id):
             
         elif decision == 'counter':
             counter_amount = Decimal(str(request.data['counter_amount']))
-            
+    
             if auction.winner:
-                counter_offer = CounterOffer.objects.create(
-                    auction=auction,
-                    seller=auction.seller,
-                    buyer=auction.winner,
-                    original_bid=auction.current_highest_bid,
-                    counter_amount=counter_amount
-                )
+                counter_offer = CounterOffer.objects.create(auction=auction,
+            seller=auction.seller,
+            buyer=auction.winner,
+            original_bid=auction.current_highest_bid,
+            counter_amount=counter_amount
+        )
+                Notification.objects.create(user=auction.winner,message=f'Counter offer of ${counter_amount} received for {auction.item_name}',auction=auction)
                 
-                Notification.objects.create(
-                    user=auction.winner,
-                    message=f'Counter offer of ${counter_amount} received for {auction.item_name}',
-                    auction=auction
-                )
-                
-                # WebSocket notification to buyer
                 try:
                     async_to_sync(channel_layer.group_send)(
                         f'user_{auction.winner.id}',
@@ -639,7 +592,6 @@ def seller_decision(request, auction_id):
                 except Exception as e:
                     logger.error(f"Failed to send WebSocket notification: {e}")
                 
-                # Notify auction watchers
                 try:
                     async_to_sync(channel_layer.group_send)(
                         f'auction_{auction.id}',
@@ -656,7 +608,6 @@ def seller_decision(request, auction_id):
                 except Exception as e:
                     logger.error(f"Failed to send auction WebSocket message: {e}")
         
-        # Send admin notification
         try:
             async_to_sync(channel_layer.group_send)(
                 'admin_monitoring',
@@ -681,21 +632,16 @@ def seller_decision(request, auction_id):
         return Response({'error': 'Auction not found'}, status=404)
     except Exception as e:
         logger.error(f"Seller decision error: {e}")
-        return Response({'error': str(e)}, status=500)
+        return Response({'success': True,'counter_offer': CounterOfferSerializer(counter_offer).data}, status=201)
 
-# New endpoint for sellers to view their auctions with admin-like capabilities
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def seller_auction_dashboard(request):
-    """Get seller's auctions with detailed analytics - DEBUG VERSION"""
     try:
-        # Get seller's auctions
         seller_auctions = Auction.objects.filter(seller=request.user).order_by('-created_at')
         
-        # Update statuses
         update_auction_statuses()
         
-        # Calculate basic stats
         stats = {
             'total_auctions': seller_auctions.count(),
             'active_auctions': seller_auctions.filter(status='active').count(),
@@ -706,20 +652,16 @@ def seller_auction_dashboard(request):
             'pending_counter_offers': CounterOffer.objects.filter(seller=request.user, status='pending').count()
         }
         
-        # Calculate revenue safely
         for auction in seller_auctions.filter(status='completed'):
             if auction.current_highest_bid:
                 stats['total_revenue'] += float(auction.current_highest_bid)
         
-        # Serialize auctions using the standard serializer only
         auction_serializer = AuctionSerializer(seller_auctions, many=True)
         auction_data = auction_serializer.data
         
-        # Serialize counter offers
         counter_offers = CounterOffer.objects.filter(seller=request.user).order_by('-created_at')[:10]
         counter_offers_serializer = CounterOfferSerializer(counter_offers, many=True)
         
-        # Serialize seller
         seller_serializer = UserSerializer(request.user)
         
         return Response({
@@ -733,11 +675,9 @@ def seller_auction_dashboard(request):
         logger.error(f"Seller dashboard error: {e}", exc_info=True)
         return Response({'error': str(e)}, status=500)
 
-# Enhanced counter offer endpoints
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_counter_offer(request, auction_id):
-    """Create a counter offer - for sellers only"""
     try:
         auction = Auction.objects.get(id=auction_id, seller=request.user)
         
@@ -750,7 +690,6 @@ def create_counter_offer(request, auction_id):
         if counter_amount <= original_bid:
             return Response({'error': 'Counter offer must be higher than original bid'}, status=400)
         
-        # Create counter offer
         counter_offer = CounterOffer.objects.create(
             auction=auction,
             seller=request.user,
@@ -759,14 +698,12 @@ def create_counter_offer(request, auction_id):
             counter_amount=counter_amount
         )
         
-        # Create notification for buyer
         Notification.objects.create(
             user=auction.winner,
             message=f'Counter offer of ${counter_amount} received for {auction.item_name}',
             auction=auction
         )
         
-        # Send WebSocket notification
         try:
             async_to_sync(channel_layer.group_send)(
                 f'user_{auction.winner.id}',

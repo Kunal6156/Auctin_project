@@ -10,13 +10,11 @@ class AuctionConsumer(AsyncWebsocketConsumer):
         self.room_group_name = f'auction_{self.auction_id}'
         self.user = self.scope.get('user')
 
-        # Join auction room group
         await self.channel_layer.group_add(
             self.room_group_name,
             self.channel_name
         )
 
-        # If user is authenticated, also join their personal notification group
         if self.user and self.user.is_authenticated:
             self.user_group_name = f'user_{self.user.id}'
             await self.channel_layer.group_add(
@@ -27,33 +25,28 @@ class AuctionConsumer(AsyncWebsocketConsumer):
         await self.accept()
 
     async def disconnect(self, close_code):
-        # Leave auction room group
         await self.channel_layer.group_discard(
             self.room_group_name,
             self.channel_name
         )
 
-        # Leave user notification group if applicable
         if hasattr(self, 'user_group_name'):
             await self.channel_layer.group_discard(
                 self.user_group_name,
                 self.channel_name
             )
 
-    # Receive message from WebSocket
     async def receive(self, text_data):
         try:
             text_data_json = json.loads(text_data)
             message_type = text_data_json.get('type')
             
-            # Handle different message types from client
             if message_type == 'ping':
                 await self.send(text_data=json.dumps({
                     'type': 'pong',
                     'timestamp': text_data_json.get('timestamp')
                 }))
             elif message_type == 'join_auction':
-                # Client is joining/rejoining auction
                 await self.send_auction_status()
         except json.JSONDecodeError:
             await self.send(text_data=json.dumps({
@@ -62,7 +55,6 @@ class AuctionConsumer(AsyncWebsocketConsumer):
             }))
 
     async def send_auction_status(self):
-        """Send current auction status to the client"""
         try:
             auction = await self.get_auction()
             if auction:
@@ -84,7 +76,6 @@ class AuctionConsumer(AsyncWebsocketConsumer):
 
     @database_sync_to_async
     def get_auction(self):
-        """Get auction data from database"""
         try:
             auction = Auction.objects.select_related('seller', 'winner').get(id=self.auction_id)
             return {
@@ -99,7 +90,6 @@ class AuctionConsumer(AsyncWebsocketConsumer):
         except Auction.DoesNotExist:
             return None
 
-    # Handler for bid updates
     async def bid_update(self, event):
         message = event['message']
         await self.send(text_data=json.dumps({
@@ -107,7 +97,6 @@ class AuctionConsumer(AsyncWebsocketConsumer):
             'message': message
         }))
 
-    # Handler for auction end
     async def auction_end(self, event):
         message = event['message']
         await self.send(text_data=json.dumps({
@@ -115,15 +104,12 @@ class AuctionConsumer(AsyncWebsocketConsumer):
             'message': message
         }))
 
-    # Handler for seller decision notifications
     async def seller_decision(self, event):
         message = event['message']
         await self.send(text_data=json.dumps({
             'type': 'seller_decision',
             'message': message
         }))
-
-    # Handler for counter offer notifications
     async def counter_offer(self, event):
         message = event['message']
         await self.send(text_data=json.dumps({
@@ -131,7 +117,6 @@ class AuctionConsumer(AsyncWebsocketConsumer):
             'message': message
         }))
 
-    # Handler for counter offer responses
     async def counter_offer_response(self, event):
         message = event['message']
         await self.send(text_data=json.dumps({
@@ -139,7 +124,6 @@ class AuctionConsumer(AsyncWebsocketConsumer):
             'message': message
         }))
 
-    # Handler for general notifications
     async def notification(self, event):
         message = event['message']
         await self.send(text_data=json.dumps({
@@ -147,7 +131,6 @@ class AuctionConsumer(AsyncWebsocketConsumer):
             'message': message
         }))
 
-    # Handler for auction status updates
     async def auction_status_update(self, event):
         message = event['message']
         await self.send(text_data=json.dumps({
@@ -157,7 +140,6 @@ class AuctionConsumer(AsyncWebsocketConsumer):
 
 
 class UserNotificationConsumer(AsyncWebsocketConsumer):
-    """WebSocket consumer for user-specific notifications"""
     
     async def connect(self):
         self.user = self.scope.get('user')
@@ -169,7 +151,6 @@ class UserNotificationConsumer(AsyncWebsocketConsumer):
         self.user_id = self.user.id
         self.room_group_name = f'user_{self.user_id}'
 
-        # Join user notification group
         await self.channel_layer.group_add(
             self.room_group_name,
             self.channel_name
@@ -178,7 +159,6 @@ class UserNotificationConsumer(AsyncWebsocketConsumer):
         await self.accept()
 
     async def disconnect(self, close_code):
-        # Leave user notification group
         if hasattr(self, 'room_group_name'):
             await self.channel_layer.group_discard(
                 self.room_group_name,
@@ -219,7 +199,6 @@ class UserNotificationConsumer(AsyncWebsocketConsumer):
         except Notification.DoesNotExist:
             return False
 
-    # Handler for new notifications
     async def new_notification(self, event):
         message = event['message']
         await self.send(text_data=json.dumps({
@@ -227,7 +206,6 @@ class UserNotificationConsumer(AsyncWebsocketConsumer):
             'message': message
         }))
 
-    # Handler for counter offer notifications
     async def counter_offer_received(self, event):
         message = event['message']
         await self.send(text_data=json.dumps({
@@ -235,7 +213,6 @@ class UserNotificationConsumer(AsyncWebsocketConsumer):
             'message': message
         }))
 
-    # Handler for auction completion notifications
     async def auction_completed(self, event):
         message = event['message']
         await self.send(text_data=json.dumps({
@@ -243,7 +220,6 @@ class UserNotificationConsumer(AsyncWebsocketConsumer):
             'message': message
         }))
 
-    # Handler for bid rejection notifications
     async def bid_rejected(self, event):
         message = event['message']
         await self.send(text_data=json.dumps({
@@ -253,19 +229,16 @@ class UserNotificationConsumer(AsyncWebsocketConsumer):
 
 
 class AdminConsumer(AsyncWebsocketConsumer):
-    """WebSocket consumer for admin real-time monitoring"""
     
     async def connect(self):
         self.user = self.scope.get('user')
         
-        # Check if user is admin/staff
         if not self.user or not self.user.is_authenticated or not (self.user.is_staff or self.user.is_superuser):
             await self.close()
             return
             
         self.room_group_name = 'admin_monitoring'
 
-        # Join admin monitoring group
         await self.channel_layer.group_add(
             self.room_group_name,
             self.channel_name
@@ -274,7 +247,6 @@ class AdminConsumer(AsyncWebsocketConsumer):
         await self.accept()
 
     async def disconnect(self, close_code):
-        # Leave admin monitoring group
         if hasattr(self, 'room_group_name'):
             await self.channel_layer.group_discard(
                 self.room_group_name,
@@ -301,7 +273,6 @@ class AdminConsumer(AsyncWebsocketConsumer):
             }))
 
     async def send_auction_stats(self):
-        """Send current auction statistics to admin"""
         try:
             stats = await self.get_auction_stats()
             await self.send(text_data=json.dumps({
@@ -316,13 +287,11 @@ class AdminConsumer(AsyncWebsocketConsumer):
 
     @database_sync_to_async
     def get_auction_stats(self):
-        """Get auction statistics from database"""
         from django.utils import timezone
         
         now = timezone.now()
         total_auctions = Auction.objects.count()
         
-        # Count truly active auctions
         active_auctions = 0
         pending_auctions = Auction.objects.filter(status='pending')
         for auction in pending_auctions:
@@ -344,7 +313,6 @@ class AdminConsumer(AsyncWebsocketConsumer):
             'timestamp': now.isoformat()
         }
 
-    # Handler for new auction created
     async def auction_created(self, event):
         message = event['message']
         await self.send(text_data=json.dumps({
@@ -352,7 +320,6 @@ class AdminConsumer(AsyncWebsocketConsumer):
             'message': message
         }))
 
-    # Handler for new bid placed
     async def admin_bid_update(self, event):
         message = event['message']
         await self.send(text_data=json.dumps({
@@ -360,7 +327,6 @@ class AdminConsumer(AsyncWebsocketConsumer):
             'message': message
         }))
 
-    # Handler for auction status changes
     async def admin_auction_status_change(self, event):
         message = event['message']
         await self.send(text_data=json.dumps({
@@ -368,7 +334,6 @@ class AdminConsumer(AsyncWebsocketConsumer):
             'message': message
         }))
 
-    # Handler for seller decisions
     async def admin_seller_decision(self, event):
         message = event['message']
         await self.send(text_data=json.dumps({

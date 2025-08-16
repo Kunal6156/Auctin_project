@@ -28,8 +28,6 @@ const SellerDecision = ({ currentUser }) => {
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState('');
   const [decisionMade, setDecisionMade] = useState(false);
-  
-  // Admin-like capabilities
   const [adminMode, setAdminMode] = useState(false);
   const [dashboardStats, setDashboardStats] = useState(null);
   const [recentCounterOffers, setRecentCounterOffers] = useState([]);
@@ -46,8 +44,6 @@ const SellerDecision = ({ currentUser }) => {
     try {
       setPageLoading(true);
       const data = await getAuction(id);
-      
-      // Verify this is the seller's auction
       if (data.seller.id !== currentUser?.id) {
         setError("You don't have permission to make decisions on this auction.");
         return;
@@ -64,7 +60,6 @@ const SellerDecision = ({ currentUser }) => {
     }
   };
 
-  // NEW: Load seller dashboard data for admin-like overview
   const loadSellerDashboardData = async () => {
     try {
       const dashboardData = await getSellerDashboard();
@@ -74,7 +69,6 @@ const SellerDecision = ({ currentUser }) => {
     }
   };
 
-  // NEW: Load counter offers for this seller
   const loadCounterOffers = async () => {
     try {
       const offers = await getUserCounterOffers();
@@ -88,7 +82,6 @@ const SellerDecision = ({ currentUser }) => {
     }
   };
 
-  // NEW: Admin-like status update capability
   const handleDirectStatusUpdate = async (newStatus) => {
     if (!window.confirm(`Are you sure you want to change auction status to ${newStatus}?`)) {
       return;
@@ -107,7 +100,6 @@ const SellerDecision = ({ currentUser }) => {
     }
   };
 
-  // NEW: Force refresh all auction statuses
   const handleRefreshStatuses = async () => {
     try {
       setLoading(true);
@@ -223,17 +215,17 @@ const SellerDecision = ({ currentUser }) => {
   const getStatusColor = (status) => {
   switch (status) {
     case 'pending':
-      return '#ffc107'; // yellow
+      return '#ffc107'; 
     case 'active':
-      return '#28a745'; // green
+      return '#28a745'; 
     case 'ended':
-      return '#6c757d'; // gray
+      return '#6c757d'; 
     case 'completed':
-      return '#007bff'; // blue
+      return '#007bff'; 
     case 'cancelled':
-      return '#dc3545'; // red
+      return '#dc3545'; 
     default:
-      return '#6c757d'; // fallback gray
+      return '#6c757d'; 
   }
 };
 
@@ -347,7 +339,7 @@ const SellerDecision = ({ currentUser }) => {
           </label>
           <button 
             onClick={() => setShowAdvancedControls(!showAdvancedControls)}
-            className="btn btn-outline-primary"
+            className="btn btn-light border-primary text-primary"
           >
             {showAdvancedControls ? '🔽' : '🔼'} Advanced Controls
           </button>
@@ -394,8 +386,6 @@ const SellerDecision = ({ currentUser }) => {
           </div>
         </div>
       )}
-
-      {/* Advanced Controls Panel */}
       {showAdvancedControls && (
         <div className="advanced-controls" style={{
           background: 'white',
@@ -408,7 +398,6 @@ const SellerDecision = ({ currentUser }) => {
           <h3>🔧 Advanced Seller Controls</h3>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem', marginTop: '1rem' }}>
             
-            {/* Status Management */}
             <div className="control-group" style={{ padding: '1rem', border: '1px solid #ddd', borderRadius: '8px' }}>
               <h4>📋 Status Management</h4>
               <p style={{ fontSize: '0.9rem', color: '#6c757d', marginBottom: '1rem' }}>
@@ -429,7 +418,6 @@ const SellerDecision = ({ currentUser }) => {
               </div>
             </div>
 
-            {/* System Actions */}
             <div className="control-group" style={{ padding: '1rem', border: '1px solid #ddd', borderRadius: '8px' }}>
               <h4>⚡ System Actions</h4>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
@@ -452,7 +440,6 @@ const SellerDecision = ({ currentUser }) => {
               </div>
             </div>
 
-            {/* Auction Analytics */}
             <div className="control-group" style={{ padding: '1rem', border: '1px solid #ddd', borderRadius: '8px' }}>
               <h4>📈 Auction Analytics</h4>
               <div style={{ fontSize: '0.9rem', lineHeight: '1.4' }}>
@@ -466,7 +453,6 @@ const SellerDecision = ({ currentUser }) => {
         </div>
       )}
 
-      {/* Success/Error Messages */}
       {successMessage && (
         <div className="success-message" style={{
           background: '#d4edda',
@@ -494,8 +480,6 @@ const SellerDecision = ({ currentUser }) => {
           <p>{error}</p>
         </div>
       )}
-      
-      {/* Enhanced Auction Summary with Admin Details */}
       <div className="auction-summary" style={{
         background: 'white',
         padding: '2rem',
@@ -554,8 +538,6 @@ const SellerDecision = ({ currentUser }) => {
             </div>
           )}
         </div>
-        
-        {/* Winning Bid Details */}
         {auction.winner && (
           <div style={{
             marginTop: '1.5rem',
@@ -578,8 +560,6 @@ const SellerDecision = ({ currentUser }) => {
           </div>
         )}
       </div>
-
-      {/* Enhanced Bid History (Admin Mode) */}
       {adminMode && bidHistory.length > 0 && (
         <div className="bid-history" style={{
           background: 'white',
@@ -633,7 +613,6 @@ const SellerDecision = ({ currentUser }) => {
         </div>
       )}
 
-      {/* Counter Offers Section (Admin Mode) */}
       {adminMode && recentCounterOffers.length > 0 && (
         <div className="counter-offers-section" style={{
           background: 'white',
@@ -667,7 +646,6 @@ const SellerDecision = ({ currentUser }) => {
         </div>
       )}
       
-      {/* Decision Actions - Enhanced UI */}
       {!decisionMade && auction.winner && auction.status === 'ended' && (
         <div className="decision-actions" style={{
           background: 'white',
@@ -685,7 +663,6 @@ const SellerDecision = ({ currentUser }) => {
             gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
             gap: '1.5rem'
           }}>
-            {/* Accept Option */}
             <div className="decision-option" style={{
               border: '2px solid #28a745',
               borderRadius: '12px',
@@ -711,7 +688,6 @@ const SellerDecision = ({ currentUser }) => {
               </button>
             </div>
 
-            {/* Reject Option */}
             <div className="decision-option" style={{
               border: '2px solid #dc3545',
               borderRadius: '12px',
@@ -737,7 +713,6 @@ const SellerDecision = ({ currentUser }) => {
               </button>
             </div>
 
-            {/* Counter Offer Option */}
             <div className="decision-option" style={{
               border: '2px solid #ffc107',
               borderRadius: '12px',
@@ -805,7 +780,6 @@ const SellerDecision = ({ currentUser }) => {
         </div>
       )}
 
-      {/* Status Display for Completed Decisions */}
       {(decisionMade || auction.status !== 'ended') && (
         <div className="status-display" style={{
           background: 'white',
@@ -858,7 +832,6 @@ const SellerDecision = ({ currentUser }) => {
         </div>
       )}
 
-      {/* Enhanced Footer with Admin Actions */}
       {adminMode && (
         <div className="admin-footer" style={{
           background: 'linear-gradient(135deg, #495057 0%, #343a40 100%)',

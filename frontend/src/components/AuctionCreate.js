@@ -15,7 +15,6 @@ const AuctionCreate = ({ onSuccess }) => {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
 
-  // Get current datetime for min value
   const getCurrentDateTime = () => {
     const now = new Date();
     const year = now.getFullYear();
@@ -29,7 +28,6 @@ const AuctionCreate = ({ onSuccess }) => {
   const validateForm = () => {
     const newErrors = {};
 
-    // Required field validations
     if (!formData.item_name.trim()) {
       newErrors.item_name = 'Item name is required';
     }
@@ -49,7 +47,6 @@ const AuctionCreate = ({ onSuccess }) => {
     if (!formData.go_live_time) {
       newErrors.go_live_time = 'Go live time is required';
     } else {
-      // Check if go live time is in the future
       const goLiveTime = new Date(formData.go_live_time);
       const now = new Date();
       if (goLiveTime < now) {
@@ -61,7 +58,6 @@ const AuctionCreate = ({ onSuccess }) => {
       newErrors.duration_hours = 'Duration must be at least 1 hour';
     }
 
-    // Business logic validations
     if (parseFloat(formData.bid_increment) > parseFloat(formData.starting_price)) {
       newErrors.bid_increment = 'Bid increment cannot be greater than starting price';
     }
@@ -77,7 +73,6 @@ const AuctionCreate = ({ onSuccess }) => {
       [name]: value
     }));
 
-    // Clear error for this field when user starts typing
     if (errors[name]) {
       setErrors(prev => ({
         ...prev,
@@ -107,10 +102,8 @@ const AuctionCreate = ({ onSuccess }) => {
 
       const createdAuction = await createAuction(auctionData);
       
-      // Success feedback
       alert('Auction created successfully!');
       
-      // Reset form
       setFormData({
         item_name: '',
         description: '',
@@ -120,18 +113,15 @@ const AuctionCreate = ({ onSuccess }) => {
         duration_hours: '24'
       });
 
-      // Call success callback if provided
       if (onSuccess) {
         onSuccess();
       }
 
-      // Navigate to the created auction
       navigate(`/auction/${createdAuction.id}`);
       
     } catch (error) {
       console.error('Failed to create auction:', error);
       
-      // Handle specific API errors
       if (error.response?.data) {
         const apiErrors = error.response.data;
         setErrors(apiErrors);
@@ -160,7 +150,6 @@ const AuctionCreate = ({ onSuccess }) => {
       </div>
 
       <form onSubmit={handleSubmit} className="auction-form">
-        {/* Item Name */}
         <div className="form-group">
           <label htmlFor="item_name">
             <span className="required">*</span> Item Name
@@ -179,7 +168,6 @@ const AuctionCreate = ({ onSuccess }) => {
           {errors.item_name && <span className="error-message">{errors.item_name}</span>}
         </div>
 
-        {/* Description */}
         <div className="form-group">
           <label htmlFor="description">
             <span className="required">*</span> Description
@@ -198,7 +186,6 @@ const AuctionCreate = ({ onSuccess }) => {
           <small className="form-help">Be specific about condition, features, and any defects</small>
         </div>
 
-        {/* Pricing Section */}
         <div className="form-row">
           <div className="form-group">
             <label htmlFor="starting_price">
@@ -240,7 +227,6 @@ const AuctionCreate = ({ onSuccess }) => {
           </div>
         </div>
 
-        {/* Timing Section */}
         <div className="form-row">
           <div className="form-group">
             <label htmlFor="go_live_time">
@@ -284,7 +270,6 @@ const AuctionCreate = ({ onSuccess }) => {
           </div>
         </div>
 
-        {/* Preview Section */}
         {formData.go_live_time && formData.duration_hours && (
           <div className="auction-preview">
             <h3>📅 Auction Timeline</h3>
@@ -301,8 +286,6 @@ const AuctionCreate = ({ onSuccess }) => {
             </div>
           </div>
         )}
-
-        {/* Submit Section */}
         <div className="form-actions">
           <button
             type="button"
@@ -329,7 +312,6 @@ const AuctionCreate = ({ onSuccess }) => {
         </div>
       </form>
 
-      {/* Form Tips */}
       <div className="form-tips">
         <h3>💡 Tips for a Successful Auction</h3>
         <ul>

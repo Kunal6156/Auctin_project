@@ -225,7 +225,17 @@ const AuctionRoom = ({ currentUser }) => {
   }
 
   const currentBid = auction.current_highest_bid || auction.starting_price;
-  const isAuctionActive =(auction.status === 'active' || auction.is_active) && timeLeft !== 'Auction Ended';
+  // Compute start & end using local timezone
+  const now = new Date();
+
+  const startUTC = new Date(auction.go_live_time);
+  const start = new Date(startUTC.getTime() - startUTC.getTimezoneOffset() * 60000);
+
+  const endUTC = new Date(auction.end_time);
+  const end = new Date(endUTC.getTime() - endUTC.getTimezoneOffset() * 60000);
+
+   const isAuctionActive = (now >= start && now <= end);
+
   const isUserWinning = auction.winner?.id === currentUser?.id;
 
   return (

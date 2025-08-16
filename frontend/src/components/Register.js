@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { register } from '../services/api';
+import { useNavigate } from 'react-router-dom';  
 
 const Register = ({ onRegister, switchToLogin }) => {
   const [formData, setFormData] = useState({
@@ -10,6 +11,10 @@ const Register = ({ onRegister, switchToLogin }) => {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  const navigate = useNavigate();   
+
+      navigate('/');
 
   const handleChange = (e) => {
     setFormData({
@@ -41,6 +46,8 @@ const Register = ({ onRegister, switchToLogin }) => {
         password: formData.password
       });
       onRegister(response.user);
+      const navigate = useNavigate(); 
+      navigate('/');
     } catch (err) {
       setError(err.response?.data?.error || 'Registration failed');
     } finally {

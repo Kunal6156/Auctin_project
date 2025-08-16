@@ -25,7 +25,7 @@ class AuctionSerializer(serializers.ModelSerializer):
         format=None, default_timezone=IST, required=False
     )
     end_time = serializers.DateTimeField(
-        source="end_time", format=None, default_timezone=IST, required=False
+         format=None, default_timezone=IST, required=False
     )
 
     class Meta:

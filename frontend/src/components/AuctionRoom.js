@@ -240,14 +240,21 @@ const AuctionRoom = ({ currentUser }) => {
 
   return (
     <div className="auction-room">
+    
       {/* Header */}
       <div className="auction-header">
         <div className="auction-title">
-          <h1>{auction.item_name}</h1>
-          <span className={`status-badge ${auction.status}`}>
-            {auction.status}
-          </span>
+        <h1>{auction.item_name}</h1>
+
+        {(() => {
+           const displayStatus = (now >= start && now <= end) ? 'active': (timeLeft === 'Auction Ended' ? 'ended' : auction.status);
+          return ( <span className={`status-badge ${displayStatus}`}>
+        {displayStatus}
+                  </span> );
+          })()}
+
         </div>
+
         <div className={`time-left ${!isAuctionActive ? 'ended' : ''}`}>
           {timeLeft || 'Loading...'}
         </div>

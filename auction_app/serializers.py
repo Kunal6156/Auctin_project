@@ -1,27 +1,36 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from django.utils.timezone import localtime
+from zoneinfo import ZoneInfo
 from .models import Auction, Bid, CounterOffer, Notification
+
+IST = ZoneInfo("Asia/Kolkata")
+
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'username', 'email']
+        fields = ["id", "username", "email"]
 
 
 class AuctionSerializer(serializers.ModelSerializer):
     seller = UserSerializer(read_only=True)
     winner = UserSerializer(read_only=True)
     is_active = serializers.SerializerMethodField()
-    end_time = serializers.SerializerMethodField()
 
-    # Ensure datetime fields are returned in IST
-    go_live_time = serializers.SerializerMethodField()
-    created_at = serializers.SerializerMethodField()
+    # Let DRF handle formatting & timezone
+    go_live_time = serializers.DateTimeField(
+        format=None, default_timezone=IST, required=False
+    )
+    created_at = serializers.DateTimeField(
+        format=None, default_timezone=IST, required=False
+    )
+    end_time = serializers.DateTimeField(
+        source="end_time", format=None, default_timezone=IST, required=False
+    )
 
     class Meta:
         model = Auction
-        fields = '__all__'
+        fields = "__all__"
 
     def get_is_active(self, obj):
         return obj.is_active()

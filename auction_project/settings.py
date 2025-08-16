@@ -64,7 +64,6 @@ DATABASES = {
 
 
 
-# Redis Configuration
 REDIS_URL = config('REDIS_URL', default='redis://localhost:6379/0')
 
 CHANNEL_LAYERS = {
@@ -111,8 +110,6 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'frontend/build/static')]
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-
-# Logging configuration for debugging
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,

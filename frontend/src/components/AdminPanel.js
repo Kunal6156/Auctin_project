@@ -20,7 +20,7 @@ const AdminPanel = ({ currentUser }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [hasAccess, setHasAccess] = useState(false);
-  const [accessType, setAccessType] = useState('none'); // 'admin', 'seller', or 'none'
+  const [accessType, setAccessType] = useState('none');
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [successMessage, setSuccessMessage] = useState('');
 
@@ -45,7 +45,6 @@ const AdminPanel = ({ currentUser }) => {
         return;
       }
 
-      // Check if user is admin
       if (currentUser.is_staff || currentUser.is_superuser || currentUser.role === 'admin') {
         setHasAccess(true);
         setAccessType('admin');
@@ -53,7 +52,6 @@ const AdminPanel = ({ currentUser }) => {
         return;
       }
 
-      // Check if user is a seller by checking seller dashboard
       try {
         const sellerData = await getSellerDashboard();
 
@@ -68,7 +66,6 @@ const AdminPanel = ({ currentUser }) => {
       }
 
 
-      // No access
       setHasAccess(false);
       setAccessType('none');
 
@@ -87,11 +84,9 @@ const AdminPanel = ({ currentUser }) => {
       setError(null);
 
       if (accessType === 'admin') {
-        // Admin: Load all auctions
         const data = await getAuctions();
         setAuctions(data);
 
-        // Calculate admin stats
         const now = new Date();
         let activeCount = 0;
         let completedCount = 0;
@@ -161,7 +156,7 @@ const AdminPanel = ({ currentUser }) => {
 
     try {
       await updateAuctionStatus(auctionId, newStatus);
-      await loadData(); // Reload to update stats
+      await loadData(); 
       setSuccessMessage(`✅ Auction status updated to ${newStatus}`);
       setTimeout(() => setSuccessMessage(''), 3000);
     } catch (error) {
@@ -234,7 +229,7 @@ const AdminPanel = ({ currentUser }) => {
     }
   };
 
-  // Show loading spinner while checking authentication
+  
   if (checkingAuth) {
     return (
       <div className="admin-panel">
@@ -248,7 +243,7 @@ const AdminPanel = ({ currentUser }) => {
     );
   }
 
-  // Show access denied if no access
+ 
   if (!hasAccess) {
     return (
       <div className="admin-panel">
@@ -386,7 +381,6 @@ const AdminPanel = ({ currentUser }) => {
         </div>
       </div>
 
-      {/* Success Message */}
       {successMessage && (
         <div style={{
           background: '#d4edda',
@@ -400,7 +394,7 @@ const AdminPanel = ({ currentUser }) => {
         </div>
       )}
 
-      {/* Enhanced Stats Grid */}
+    
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
@@ -479,7 +473,6 @@ const AdminPanel = ({ currentUser }) => {
         </div>
       </div>
 
-      {/* Enhanced Auctions Section */}
       <div style={{
         background: 'white',
         padding: '2rem',
@@ -665,8 +658,6 @@ const AdminPanel = ({ currentUser }) => {
           )}
         </div>
       </div>
-
-      {/* Footer with Access Info */}
       <div style={{
         background: 'linear-gradient(135deg, #495057 0%, #343a40 100%)',
         color: 'white',

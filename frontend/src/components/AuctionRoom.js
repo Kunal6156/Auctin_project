@@ -58,7 +58,14 @@ const AuctionRoom = ({ currentUser }) => {
       if (showLoading) setLoading(true);
       const data = await getAuction(id);
       setAuction(data);
-      setBidHistory(data.bids || []);
+      setBidHistory(prev => {
+  const serverBids = data.bids || [];
+  const merged = [...serverBids, ...prev.filter(
+    b => !serverBids.some(sb => sb.id === b.id)
+  )];
+  return merged.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+});
+
       setError(null);
     } catch (error) {
       console.error('Failed to load auction:', error);

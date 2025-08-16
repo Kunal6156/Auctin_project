@@ -12,12 +12,10 @@ import logging
 logger = logging.getLogger(__name__)
 
 def send_confirmation_email(seller, buyer, auction):
-    """Enhanced debug version of send_confirmation_email"""
     try:
         logger.info(f"Starting email send process for auction {auction.id}")
         logger.info(f"Seller email: {seller.email}, Buyer email: {buyer.email}")
         
-        # Check if settings are configured
         if not hasattr(settings, 'SENDGRID_API_KEY'):
             logger.error("SENDGRID_API_KEY not found in settings")
             return False
@@ -64,7 +62,6 @@ def send_confirmation_email(seller, buyer, auction):
         return False
 
 def generate_invoice(auction):
-    """Enhanced debug version of generate_invoice"""
     try:
         logger.info(f"Starting invoice generation for auction {auction.id}")
         
@@ -87,7 +84,6 @@ def generate_invoice(auction):
         buffer.seek(0)
         logger.info("PDF invoice created successfully")
         
-        # Send invoice via email
         message = Mail(
             from_email=settings.FROM_EMAIL,
             to_emails=[auction.seller.email, auction.winner.email],

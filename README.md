@@ -9,41 +9,39 @@ This project was developed as part of the **BVCOE Software Assignment** and also
 
 ## 📌 Project Overview
 
-The **Real-Time Auction System** enables sellers to create auctions while buyers participate in bidding dynamically.  
-The system ensures **real-time updates**, **notifications**, and a **clear flow of transactions** from auction creation to invoice generation.
+The **Real-Time Auction System** allows sellers to create auctions and buyers to participate in bidding dynamically.  
+The platform ensures **real-time bid updates**, **seller decision flows**, and **post-auction invoice generation**.
 
 ---
 
 ## ✨ Features
 
 - **Auction Creation**
-  - Sellers create auctions with item details, starting price, bid increment, go-live time, and duration.
-  
+  - Sellers can create auctions with item name, description, starting price, bid increment, and duration.
+
 - **Live Bidding**
   - Buyers place bids dynamically.
-  - The highest bid updates instantly for all participants.
-  
+  - Highest bid updates instantly across all connected clients.
+
 - **Notifications**
-  - Sellers and bidders get real-time notifications when:
-    - A new bid is placed.
-    - Their bid is outbid.
-    - Auction ends.
-  
+  - Real-time notifications for:
+    - New bids
+    - Outbids
+    - Auction end
+
 - **Seller Decision Flow**
-  - At auction end, sellers can:
-    - Accept the highest bid ✅
-    - Reject the highest bid ❌
-    - Propose a counter-offer 🔄
-  - Buyers can accept/reject counter-offers.
+  - At auction end, seller can:
+    - Accept the highest bid ✅  
+    - Reject the highest bid ❌  
+    - Propose a counter-offer 🔄  
 
 - **Post-Auction Flow**
-  - Both seller and buyer receive confirmation emails.
-  - Automatic **PDF invoice generation** for successful transactions.
+  - Confirmation emails sent to buyer & seller.
+  - Automatic PDF invoice generation.
 
 - **Admin Panel (Bonus)**
-  - Admins can view all auctions.
+  - Monitor auctions and users.
   - Start/reset auctions manually.
-  - Monitor users and bids in real-time.
 
 ---
 
@@ -51,113 +49,138 @@ The system ensures **real-time updates**, **notifications**, and a **clear flow 
 
 - **Frontend:** React.js  
 - **Backend:** Django + Django REST Framework  
-- **Real-Time Communication:** WebSockets (Django Channels)  
+- **Real-Time:** WebSockets (Django Channels + Daphne)  
 - **Database:** PostgreSQL (Supabase)  
-- **Cache / State Management:** Redis (Upstash)  
+- **Cache/State:** Redis (Upstash)  
 - **Email Service:** SendGrid  
-- **Deployment:** Render (Dockerized single container)
+- **Deployment:** Render (Dockerized)  
 
 ---
 
-## 📂 Folder Structure
+## 📂 Project Structure
 
 ```
 
 auction-system/
-│── auction\_app/           # Auction models, APIs, sockets
-│── auction\_project/       # Django project configuration
-│── frontend/              # React frontend (UI, components, pages)
-│   ├── public/
-│   └── src/
-│       ├── components/
-│       ├── services/
-│       ├── App.js
-│       └── index.js
-│── manage.py
-│── requirements.txt
-│── Dockerfile
-│── README.md
+├── Dockerfile
+├── requirements.txt
+├── package.json
+├── manage.py
+├── auction\_project/
+│   ├── **init**.py
+│   ├── settings.py
+│   ├── urls.py
+│   ├── wsgi.py
+│   └── asgi.py
+├── auction\_app/
+│   ├── **init**.py
+│   ├── admin.py
+│   ├── apps.py
+│   ├── models.py
+│   ├── views.py
+│   ├── urls.py
+│   ├── serializers.py
+│   ├── consumers.py
+│   └── migrations/
+├── static/
+│   └── build/
+└── frontend/
+├── package.json
+├── public/
+│   └── index.html
+└── src/
+├── index.js
+├── App.js
+├── components/
+│   ├── AuctionCreate.js
+│   ├── AuctionRoom.js
+│   ├── BidForm.js
+│   ├── SellerDecision.js
+│   ├── AdminPanel.js
+│   ├── Login.js
+│   ├── Register.js
+│   └── AuthWrapper.js
+└── services/
+├── api.js
+└── websocket.js
 
 ````
 
 ---
 
-## 🚀 Running the Project Locally
+## ⚙️ Installation & Running Locally
 
 ### Prerequisites
-- Python 3.10+  
+- Python 3.11+  
 - Node.js 18+  
-- PostgreSQL Database  
-- Redis (local or Upstash instance)  
+- PostgreSQL  
+- Redis (local or Upstash)  
 
-### Steps
-
-1. **Clone the Repository**
-   ```bash
-   git clone <YOUR_REPO_URL>
-   cd auction-system
+### 1️⃣ Clone Repository
+```bash
+git clone <YOUR_REPO_URL>
+cd auction-system
 ````
 
-2. **Backend Setup**
+### 2️⃣ Backend Setup
 
-   ```bash
-   cd auction_project
-   pip install -r requirements.txt
-   python manage.py migrate
-   python manage.py runserver
-   ```
+```bash
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py runserver
+```
 
-   Backend runs on: `http://127.0.0.1:8000/`
+Backend runs at: `http://127.0.0.1:8000/`
 
-3. **Frontend Setup**
+### 3️⃣ Frontend Setup
 
-   ```bash
-   cd frontend
-   npm install
-   npm start
-   ```
+```bash
+cd frontend
+npm install
+npm start
+```
 
-   Frontend runs on: `http://localhost:3000/`
+Frontend runs at: `http://localhost:3000/`
 
 ---
 
 ## 🐳 Docker Deployment
 
-To build and run the app in a Docker container:
+The project is fully containerized. To build and run:
 
 ```bash
 docker build -t auction-system .
 docker run -p 8000:8000 auction-system
 ```
 
+This will:
+
+* Build the React frontend → `/frontend/build`
+* Collect Django static files
+* Start **Daphne** ASGI server on port `8000`
+
 ---
 
 ## 📧 Notifications & Emails
 
-* **In-app Notifications:**
-  Live alerts for bids, outbids, counter-offers, and auction results.
-
-* **Email Notifications:**
-  Powered by **SendGrid** for buyer and seller confirmation.
-
-* **Invoice Generation:**
-  Automatic PDF invoices are sent to both parties after a successful transaction.
+* **In-app Notifications** for new bids, outbids, and auction results.
+* **Email Notifications** using SendGrid.
+* **Invoices** generated as PDFs using ReportLab and sent via email.
 
 ---
 
 ## 🔮 Future Scope
 
-* Role-based dashboards (Admin, Seller, Buyer).
-* SMS notifications using Twilio.
-* Advanced analytics and reporting for auctions.
-* CI/CD pipelines with GitHub Actions.
-* Improved bidding history logs with visualization.
+* Role-based dashboards (Admin, Seller, Buyer)
+* SMS notifications via Twilio
+* Advanced analytics & reporting
+* CI/CD with GitHub Actions
 
 ---
 
 ## 📚 Assignment Reference
 
-This project was developed according to **BVCOE Assignment Guidelines** for
+This project was developed as per **BVCOE Assignment Guidelines** for
 **Mini Auction System (Real-Time Bidding)**.
 
 ---
@@ -171,4 +194,3 @@ Developed by **Kunal**
 # 🌟 Thank you for visiting the project!
 
 ```
-

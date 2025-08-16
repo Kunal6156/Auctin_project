@@ -19,7 +19,6 @@ const CounterOfferResponse = ({ currentUser }) => {
   const loadCounterOffer = async () => {
     try {
       setPageLoading(true);
-      // This would need to be implemented in your API
       const response = await fetch(`/api/counter-offers/${offerId}/`, {
         headers: {
           'Authorization': `Token ${localStorage.getItem('token')}`,
@@ -33,13 +32,11 @@ const CounterOfferResponse = ({ currentUser }) => {
       
       const data = await response.json();
       
-      // Verify this is for the current user
       if (data.buyer.id !== currentUser?.id) {
         setError("You don't have permission to respond to this counter offer.");
         return;
       }
 
-      // Check if already responded
       if (data.status !== 'pending') {
         setError("This counter offer has already been responded to.");
         return;
@@ -78,8 +75,6 @@ const CounterOfferResponse = ({ currentUser }) => {
       
       setSuccessMessage(message);
       setResponseMade(true);
-      
-      // Reload to show updated status
       setTimeout(() => {
         loadCounterOffer();
       }, 1000);
@@ -181,7 +176,7 @@ const CounterOfferResponse = ({ currentUser }) => {
         </div>
       )}
 
-      {/* Error Message */}
+      {/* Error */}
       {error && (
         <div className="error-message" style={{
           background: '#f8d7da',
@@ -196,7 +191,6 @@ const CounterOfferResponse = ({ currentUser }) => {
         </div>
       )}
 
-      {/* Counter Offer Details */}
       <div className="counter-offer-details" style={{
         background: 'white',
         padding: '2rem',
@@ -247,7 +241,7 @@ const CounterOfferResponse = ({ currentUser }) => {
         </div>
       </div>
 
-      {/* Response Actions */}
+      {/* Response Act */}
       {!responseMade && counterOffer.status === 'pending' && (
         <div className="response-actions" style={{
           background: 'white',
@@ -323,7 +317,7 @@ const CounterOfferResponse = ({ currentUser }) => {
             </div>
           </div>
 
-          {/* Comparison Table */}
+          {/* Comparison */}
           <div style={{
             marginTop: '2rem',
             padding: '1rem',
@@ -356,7 +350,7 @@ const CounterOfferResponse = ({ currentUser }) => {
         </div>
       )}
 
-      {/* Status Display for Completed Response */}
+      {/* Display for Completed  */}
       {(responseMade || counterOffer.status !== 'pending') && (
         <div className="status-display" style={{
           background: 'white',
@@ -393,7 +387,6 @@ const CounterOfferResponse = ({ currentUser }) => {
         </div>
       )}
 
-      {/* Additional Actions */}
       <div style={{ textAlign: 'center', marginTop: '2rem' }}>
         <button 
           onClick={() => navigate('/')} 

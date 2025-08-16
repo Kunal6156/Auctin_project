@@ -3,8 +3,9 @@ import dj_database_url
 from decouple import config
 from pathlib import Path
 
+
 USE_TZ = True
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Kolkata'
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -48,7 +49,9 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',
     ],
+    'DATETIME_FORMAT': "%Y-%m-%dT%H:%M:%S%z",   # example: 2025-08-16T10:34:00+0530
 }
+
 
 DATABASES = {
     'default': dj_database_url.config(

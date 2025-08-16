@@ -138,10 +138,7 @@ const AuctionRoom = ({ currentUser }) => {
       await placeBid(id, amount);
       addNotification('Your bid was placed successfully!', 'success');
       
-      // Refresh auction data after successful bid
-      setTimeout(() => {
-        loadAuction(false);
-      }, 1000);
+      
       
     } catch (error) {
       console.error('Bid placement error:', error);

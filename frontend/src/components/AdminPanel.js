@@ -1,6 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { API_BASE_URL, getAuctions, updateAuctionStatus, getSellerDashboard, adminUpdateAllStatuses } from '../services/api';
 
+const toLocal = (utcString) => {
+  const d = new Date(utcString);
+  return new Date(d.getTime() - d.getTimezoneOffset() * 60000);
+};
+
+
 const AdminPanel = ({ currentUser }) => {
   const [auctions, setAuctions] = useState([]);
   const [stats, setStats] = useState({
@@ -91,8 +97,9 @@ const AdminPanel = ({ currentUser }) => {
         let totalRevenue = 0;
 
         data.forEach(auction => {
-          const goLiveTime = new Date(auction.go_live_time);
-          const endTime = new Date(auction.end_time);
+          const goLiveTime = toLocal(auction.go_live_time);
+          const endTime = toLocal(auction.end_time);
+
 
           const isTimeActive = goLiveTime <= now && now <= endTime;
           const isStatusActive = auction.status === 'active' || (auction.status === 'pending' && isTimeActive);
@@ -138,7 +145,7 @@ const AdminPanel = ({ currentUser }) => {
   };
 
   const handleStatusChange = async (auctionId, newStatus) => {
-    // Check permissions for this specific auction
+    // permissions check
     const auction = auctions.find(a => a.id === auctionId);
 
     if (accessType === 'seller' && auction.seller.id !== currentUser.id) {
@@ -555,10 +562,10 @@ const AdminPanel = ({ currentUser }) => {
                     ₹{formatCurrency(auction.current_highest_bid || auction.starting_price)}
                   </td>
                   <td style={{ padding: '1rem 0.75rem', textAlign: 'center', fontSize: '0.85rem' }}>
-                    {formatDateTime(auction.go_live_time)}
+                   {toLocal(auction.go_live_time).toLocaleString()}
                   </td>
                   <td style={{ padding: '1rem 0.75rem', textAlign: 'center', fontSize: '0.85rem' }}>
-                    {formatDateTime(auction.end_time)}
+                    {toLocal(auction.end_time).toLocaleString()}
                   </td>
                   <td style={{ padding: '1rem 0.75rem', textAlign: 'center' }}>
                     <span style={{

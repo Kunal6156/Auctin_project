@@ -4,6 +4,13 @@ import { getAuction, placeBid } from '../services/api';
 import { connectWebSocket } from '../services/websocket';
 import BidForm from './BidForm';
 
+const toIST = (isoString) =>
+  new Date(isoString).toLocaleString("en-IN", {
+    timeZone: "Asia/Kolkata",
+    hour12: false,
+  });
+
+
 const AuctionRoom = ({ currentUser }) => {
   const { id } = useParams();
   const [auction, setAuction] = useState(null);
@@ -64,9 +71,8 @@ const AuctionRoom = ({ currentUser }) => {
   const updateTimeLeft = () => {
     if (!auction) return;
     
-    const now = new Date(new Date().getTime() + (new Date().getTimezoneOffset() * 60000));
-    const endTimeUTC = new Date(auction.end_time);
-    const endTime = new Date(endTimeUTC.getTime() - endTimeUTC.getTimezoneOffset() * 60000);
+    const now = new Date();
+    const endTime = new Date(auction.end_time);
 
     const diff = endTime - now;
     
@@ -175,9 +181,8 @@ const AuctionRoom = ({ currentUser }) => {
     }, 5000);
   };
 
-  const formatTime = (timestamp) => {
-    return new Date(timestamp).toLocaleTimeString();
-  };
+  const formatTime = (timestamp) => toIST(timestamp);
+
 
   const formatCurrency = (amount) => {
     return parseFloat(amount).toFixed(2);
@@ -225,12 +230,10 @@ const AuctionRoom = ({ currentUser }) => {
   }
 
   const currentBid = auction.current_highest_bid || auction.starting_price;
-  const now = new Date(new Date().getTime() + (new Date().getTimezoneOffset() * 60000));
-  const startUTC = new Date(auction.go_live_time);
-  const start = new Date(startUTC.getTime() - startUTC.getTimezoneOffset() * 60000);
+  const now = new Date();
+const start = new Date(auction.go_live_time);
+const end = new Date(auction.end_time);
 
-  const endUTC = new Date(auction.end_time);
-  const end = new Date(endUTC.getTime() - endUTC.getTimezoneOffset() * 60000);
 
    const isAuctionActive = (now >= start && now <= end);
 

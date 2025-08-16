@@ -49,8 +49,8 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',
     ],
-    'DATETIME_FORMAT': "%Y-%m-%dT%H:%M:%S%z",   
-    'DEFAULT_TIMEZONE': 'Asia/Kolkata',
+    'DATETIME_FORMAT': 'iso-8601',   
+    
 }
 
 

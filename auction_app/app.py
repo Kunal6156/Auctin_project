@@ -4,7 +4,6 @@ class AuctionAppConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'auction_app'
 
-# auction_app/admin.py
 from django.contrib import admin
 from .models import Auction, Bid, CounterOffer, Notification
 

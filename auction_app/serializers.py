@@ -18,7 +18,6 @@ class AuctionSerializer(serializers.ModelSerializer):
     winner = UserSerializer(read_only=True)
     is_active = serializers.SerializerMethodField()
 
-    # Let DRF handle formatting & timezone
     go_live_time = serializers.DateTimeField(
         format=None, default_timezone=IST, required=False
     )
@@ -47,8 +46,8 @@ class AuctionSerializer(serializers.ModelSerializer):
 
 
 class BidSerializer(serializers.ModelSerializer):
-    bidder = UserSerializer(read_only=True)   # handled by server
-    auction = serializers.PrimaryKeyRelatedField(read_only=True)  # handled by server
+    bidder = UserSerializer(read_only=True)   
+    auction = serializers.PrimaryKeyRelatedField(read_only=True)  
 
     class Meta:
         model = Bid
